@@ -1,0 +1,189 @@
+# Visualization layers
+layers:
+  classification:
+    enabled: true
+    file: "data/classification_map_germany_2020_v02.tif"
+    alpha: 0.7  # Adjusted for better visibility while maintaining transparency
+    colors:
+      # Define colors for each land use class
+      "0": "#000000"  # Unknown/No Data
+      "1": "#228B22"  # Forest
+      "2": "#90EE90"  # Agriculture
+      "3": "#808080"  # Urban
+      "4": "#4169E1"  # Water
+      "5": "#CD853F"  # Industrial
+      "6": "#F4A460"  # Mining
+      "7": "#98FB98"  # Parks/Recreation
+
+  population_density:
+    enabled: true
+    smoothing_sigma: 4  # Selected smoothing level
+    high_density_color: "#ffffff"  # White
+    low_density_alpha: 0.8  # Slightly increased transparency for better visibility
+    style: "smooth"  # Can be "sharp" or "smooth" the difference is in the gradient
+    
+    # Smooth style settings
+    smooth_style:
+      gradient_steps: 256  # More steps for smoother gradient
+      midpoint_alpha: 0.2  # Alpha value for medium density areas
+      edge_softness: 0.3  # Controls how soft the edges are (0-1)
+    
+  elevation:
+    enabled: false
+    file: "data/srtm_dtm_germany.tif"
+    smoothing_sigma: 1  # Smoothing for elevation data
+    color_ramp: "plasma"  # Options: terrain, viridis, plasma
+    alpha: 0.5  # Transparency of elevation overlay
+    
+  states:
+    enabled: false
+    color: "#404040"
+    line_width: 0.1
+    alpha: 0.8
+    
+  national_railroads:
+    enabled: true
+    color: "#8b0000"
+    line_width: 0.1
+    alpha: 0.8
+    
+  highways:
+    enabled: true
+    color: "#0066cc"
+    line_width: 0.1
+    alpha: 0.8
+    
+  federal_roads:
+    enabled: true
+    color: "#606060"
+    line_width: 0.1
+    alpha: 0.8
+    
+  public_transport:
+    enabled: true
+    color: "#00ffff"
+    line_width: 0.1
+    alpha: 0.7
+    
+  roads:
+    enabled: true
+    color: "#ffffff"  # White
+    alpha: 0.4       # Very subtle visibility
+    line_width: 0.05   # Thin lines for regular roads
+    query: >
+      [out:json][timeout:900];
+      area["ISO3166-1"="DE"][admin_level=2]->.germany;
+      (
+        way["highway"="tertiary"](area.germany);
+        way["highway"="residential"](area.germany);
+      );
+      out body;
+      >;
+      out skel qt;
+
+  power_lines:
+    enabled: false
+    colors:
+      380kv: "#FFD700"  # Bright yellow
+      220kv: "#FFD700"  # Same bright yellow
+    line_width: 0.05
+    alpha: 0.8
+
+# Figure settings
+figure:
+  width: 20
+  height: 20
+  background: "#000000"
+  dpi: 600
+  bbox_inches: "tight"  # This will ensure the plot uses full page
+  pad_inches: 0.1  # Small padding around the plot
+
+# Inverted variant configuration
+inverted:
+  layers:
+    population_density:
+      enabled: true
+      smoothing_sigma: 4
+      high_density_color: "#000000"  # Black
+      low_density_alpha: 0.4
+      style: "smooth"  # Can be "sharp" or "smooth"
+      
+      # Smooth style settings
+      smooth_style:
+        gradient_steps: 256  # More steps for smoother gradient
+        midpoint_alpha: 0.2  # Alpha value for medium density areas
+        edge_softness: 0.3  # Controls how soft the edges are (0-1)
+    
+    states:
+      enabled: false
+      color: "#808080"
+      line_width: 0.5
+      alpha: 0.8
+    
+    national_railroads:
+      enabled: true
+      color: "#8b0000"
+      line_width: 0.1
+      alpha: 0.8
+    
+    highways:
+      enabled: true
+      color: "#0066cc"
+      line_width: 0.1
+      alpha: 0.8
+    
+    federal_roads:
+      enabled: true
+      color: "#606060"
+      line_width: 0.1
+      alpha: 0.8
+
+
+
+    public_transport:
+      enabled: true
+      color: "#00ffff"
+      line_width: 0.1
+      alpha: 0.7
+    
+    roads:
+      enabled: true
+      color: "#000000"  # Black
+      alpha: 0.1       # Very subtle visibility
+      line_width: 0.05   # Thin lines for regular roads
+      # Only fetch major residential and tertiary roads (with 2+ lanes)
+      query: >
+        [out:json][timeout:900];
+        area["ISO3166-1"="DE"][admin_level=2]->.germany;
+        (
+          way["highway"="tertiary"](area.germany);
+          way["highway"="residential"](area.germany);
+        );
+        out body;
+        >;
+        out skel qt;
+
+    power_lines:
+      enabled: true
+      colors:
+        380kv: "#B8860B"  # Dark goldenrod for 380kV
+        220kv: "#8B6914"  # Darker yellow for 220kV
+      line_width: 0.105
+      alpha: 0.8
+      query: >
+        [out:json][timeout:900];
+        area["ISO3166-1"="DE"][admin_level=2]->.germany;
+        (
+          way["power"="line"]["voltage"~"380000|220000"](area.germany);
+        );
+        out body;
+        >;
+
+  figure:
+    width: 20
+    height: 20
+    background: "#ffffff"  # White background
+    output_file: "networks/germany_transport_network_inverted.png"
+    dpi: 600  # Match the default DPI
+    bbox_inches: "tight"
+    pad_inches: 0.1
